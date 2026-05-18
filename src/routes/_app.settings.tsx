@@ -9,16 +9,30 @@ export const Route = createFileRoute("/_app/settings")({
 });
 
 function SettingsPage() {
-  const { mode, user, isConfigured } = useAuth();
+  const { mode, user, isConfigured, logout } = useAuth();
   const profile = useProfile();
   const trades = useTrades(200);
   const connected = isConfigured && mode === "live";
 
+  async function handleLogout() {
+    await logout();
+    window.location.href = "/login";
+  }
+
   return (
     <>
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
-        <p className="text-sm text-muted-foreground">Conta e conexão Supabase.</p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
+          <p className="text-sm text-muted-foreground">Conta e conexão Supabase.</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="h-9 px-3 rounded-md border border-bear/40 text-bear text-sm hover:bg-bear/10"
+        >
+          Sair da conta
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

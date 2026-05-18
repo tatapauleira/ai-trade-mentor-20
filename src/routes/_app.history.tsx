@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTrades } from "@/hooks/use-trading-data";
+import { fmtNum } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/history")({
   component: HistoryPage,
@@ -44,8 +45,8 @@ function HistoryPage() {
                 <tr key={t.id} className="hover:bg-surface/60">
                   <td className="px-4 py-3 font-medium">{t.asset}</td>
                   <td className="px-4 py-3">{t.side}</td>
-                  <td className="px-4 py-3 font-mono">{t.entry.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-mono">{t.exit.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-mono">{fmtNum(t.entry)}</td>
+                  <td className="px-4 py-3 font-mono">{fmtNum(t.exit)}</td>
                   <td className="px-4 py-3 font-mono">{t.qty}</td>
                   <td className={`px-4 py-3 font-mono ${t.pnl >= 0 ? "text-bull" : "text-bear"}`}>
                     {t.pnl >= 0 ? "+" : ""}

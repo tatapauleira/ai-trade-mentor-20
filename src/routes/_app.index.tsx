@@ -6,6 +6,7 @@ import { SignalCard } from "@/components/SignalCard";
 import { WarningBanner } from "@/components/WarningBanner";
 import { useAuth } from "@/contexts/auth-context";
 import { useDashboardStats, useEquityCurve, useSignals } from "@/hooks/use-trading-data";
+import { fmtUSDInt } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/")({
   component: DashboardPage,
@@ -18,8 +19,7 @@ function DashboardPage() {
   const { data: equity = [] } = useEquityCurve();
   const { data: signals = [] } = useSignals(3);
 
-  const fmt = (n: number) =>
-    n.toLocaleString("pt-BR", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const fmt = fmtUSDInt;
 
   return (
     <>

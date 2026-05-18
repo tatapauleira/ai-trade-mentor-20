@@ -13,19 +13,25 @@ export const mockEquityCurve = Array.from({ length: 60 }, (_, i) => {
   };
 });
 
+// Pseudo-random determinístico (SSR-safe, sem Math.random no escopo de módulo)
+const rand = (i: number, salt = 1) => {
+  const x = Math.sin(i * 9301 + salt * 49297) * 233280;
+  return x - Math.floor(x);
+};
+
 export const mockPriceCandles = Array.from({ length: 80 }, (_, i) => {
   const base = 42000 + Math.sin(i / 4) * 900 + i * 12;
-  const open = base + Math.random() * 80 - 40;
-  const close = base + Math.random() * 120 - 60;
+  const open = base + rand(i, 1) * 80 - 40;
+  const close = base + rand(i, 2) * 120 - 60;
   return {
     t: i,
     time: `${String(9 + Math.floor(i / 12)).padStart(2, "0")}:${String((i * 5) % 60).padStart(2, "0")}`,
     open: +open.toFixed(2),
     close: +close.toFixed(2),
-    high: +(Math.max(open, close) + Math.random() * 60).toFixed(2),
-    low: +(Math.min(open, close) - Math.random() * 60).toFixed(2),
+    high: +(Math.max(open, close) + rand(i, 3) * 60).toFixed(2),
+    low: +(Math.min(open, close) - rand(i, 4) * 60).toFixed(2),
     price: +close.toFixed(2),
-    volume: Math.round(800 + Math.random() * 1200),
+    volume: Math.round(800 + rand(i, 5) * 1200),
   };
 });
 

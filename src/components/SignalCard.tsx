@@ -1,5 +1,6 @@
 import type { AISignal } from "@/lib/types";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { fmtNum } from "@/lib/format";
 
 const kindMap = {
   BUY:  { label: "BUY",  cls: "text-bull border-bull/40 bg-bull/10",   Icon: TrendingUp,   glow: "glow-bull" },
@@ -53,7 +54,7 @@ function Metric({ label, value, tone }: { label: string; value: number; tone?: "
   return (
     <div className="rounded-md bg-surface border border-border px-2 py-1.5">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`font-mono text-sm ${toneCls}`}>{value.toLocaleString()}</div>
+      <div className={`font-mono text-sm ${toneCls}`}>{fmtNum(value)}</div>
     </div>
   );
 }
