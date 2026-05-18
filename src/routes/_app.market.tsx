@@ -4,6 +4,7 @@ import { TradingChart } from "@/components/TradingChart";
 import { ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
 import { useAssets, useCandles, useRefreshMarketOnMount, useUpdateMarketData } from "@/hooks/use-trading-data";
 import { TIMEFRAMES } from "@/lib/types";
+import { fmtNum } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/market")({
   component: MarketPage,
@@ -71,7 +72,7 @@ function MarketPage() {
             </div>
             <div className="flex items-baseline gap-3">
               <span className="font-mono text-2xl font-semibold">
-                {isLoading ? "…" : `$ ${price.toLocaleString()}`}
+                {isLoading ? "…" : `$ ${fmtNum(price)}`}
               </span>
               <span className="inline-flex items-center gap-1 text-bull text-sm">
                 <ArrowUpRight className="size-4" /> live

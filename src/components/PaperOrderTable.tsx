@@ -54,10 +54,10 @@ export function PaperOrderTable() {
                   </span>
                 </td>
                 <td className="px-4 py-3 font-mono">{o.qty}</td>
-                <td className="px-4 py-3 font-mono">{o.entry.toLocaleString()}</td>
-                <td className="px-4 py-3 font-mono">{o.current.toLocaleString()}</td>
-                <td className="px-4 py-3 font-mono text-bear">{o.stop.toLocaleString()}</td>
-                <td className="px-4 py-3 font-mono text-bull">{o.target.toLocaleString()}</td>
+                <td className="px-4 py-3 font-mono">{fmtNum(o.entry)}</td>
+                <td className="px-4 py-3 font-mono">{fmtNum(o.current)}</td>
+                <td className="px-4 py-3 font-mono text-bear">{fmtNum(o.stop)}</td>
+                <td className="px-4 py-3 font-mono text-bull">{fmtNum(o.target)}</td>
                 <td className={`px-4 py-3 font-mono ${o.pnl >= 0 ? "text-bull" : "text-bear"}`}>
                   {o.pnl >= 0 ? "+" : ""}
                   {o.pnl.toFixed(2)}
@@ -66,8 +66,9 @@ export function PaperOrderTable() {
                 <td className="px-4 py-3">
                   <button
                     type="button"
+                    onClick={() => handleClose(o.id)}
                     className="size-7 grid place-items-center rounded-md border border-border hover:bg-bear/15 hover:border-bear/40 hover:text-bear"
-                    title="Fechar ordem (em breve)"
+                    title="Fechar ordem (simulação)"
                   >
                     <X className="size-3.5" />
                   </button>
