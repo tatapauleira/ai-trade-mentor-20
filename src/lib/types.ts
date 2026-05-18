@@ -65,6 +65,7 @@ export interface RiskSettings {
 }
 
 export interface ChartPoint {
+  t?: number;
   day?: string;
   time?: string;
   equity?: number;
