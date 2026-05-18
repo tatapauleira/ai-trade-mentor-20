@@ -1,5 +1,6 @@
 import { TradingChart } from "./TradingChart";
 import type { BacktestMetrics, ChartPoint } from "@/lib/types";
+import { fmtNum } from "@/lib/format";
 
 interface Props {
   metrics?: BacktestMetrics | null;
@@ -30,7 +31,7 @@ export function BacktestResults({ metrics, equityCurve = [], loading }: Props) {
         { l: "Total trades", v: String(metrics.total_trades) },
         { l: "Vitórias", v: String(metrics.wins), tone: "text-bull" },
         { l: "Derrotas", v: String(metrics.losses), tone: "text-bear" },
-        { l: "Equity final", v: `$ ${metrics.final_equity.toLocaleString()}` },
+        { l: "Equity final", v: `$ ${fmtNum(metrics.final_equity)}` },
         { l: "Profit factor", v: metrics.profit_factor.toFixed(2) },
         { l: "Sharpe", v: "—" },
       ]
