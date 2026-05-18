@@ -1,8 +1,18 @@
 import { usePaperOrders } from "@/hooks/use-trading-data";
 import { X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { fmtNum } from "@/lib/format";
+import type { PaperOrder } from "@/lib/types";
 
 export function PaperOrderTable() {
   const { data: orders = [], isLoading } = usePaperOrders();
+  const qc = useQueryClient();
+
+  function handleClose(id: string) {
+    qc.setQueryData<PaperOrder[]>(["paper-orders"], (prev) =>
+      (prev ?? []).filter((o) => o.id !== id),
+    );
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
