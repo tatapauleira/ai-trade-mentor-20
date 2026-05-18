@@ -167,6 +167,7 @@ export async function fetchRiskSettings(): Promise<RiskSettings> {
 }
 
 export async function updateRiskSettings(settings: RiskSettings): Promise<void> {
+  if (!isSupabaseConfigured()) return; // no-op em mock
   const { client, session } = await requireSession();
   const { error } = await client
     .from("risk_settings")
