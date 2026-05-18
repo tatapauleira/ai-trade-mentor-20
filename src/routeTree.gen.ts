@@ -9,61 +9,268 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppStrategiesRouteImport } from './routes/_app.strategies'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppRiskRouteImport } from './routes/_app.risk'
+import { Route as AppPaperTradingRouteImport } from './routes/_app.paper-trading'
+import { Route as AppMarketRouteImport } from './routes/_app.market'
+import { Route as AppHistoryRouteImport } from './routes/_app.history'
+import { Route as AppBacktestingRouteImport } from './routes/_app.backtesting'
+import { Route as AppAiTraderRouteImport } from './routes/_app.ai-trader'
 
-const IndexRoute = IndexRouteImport.update({
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStrategiesRoute = AppStrategiesRouteImport.update({
+  id: '/strategies',
+  path: '/strategies',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRiskRoute = AppRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPaperTradingRoute = AppPaperTradingRouteImport.update({
+  id: '/paper-trading',
+  path: '/paper-trading',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMarketRoute = AppMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBacktestingRoute = AppBacktestingRouteImport.update({
+  id: '/backtesting',
+  path: '/backtesting',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiTraderRoute = AppAiTraderRouteImport.update({
+  id: '/ai-trader',
+  path: '/ai-trader',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/login': typeof LoginRoute
+  '/ai-trader': typeof AppAiTraderRoute
+  '/backtesting': typeof AppBacktestingRoute
+  '/history': typeof AppHistoryRoute
+  '/market': typeof AppMarketRoute
+  '/paper-trading': typeof AppPaperTradingRoute
+  '/risk': typeof AppRiskRoute
+  '/settings': typeof AppSettingsRoute
+  '/strategies': typeof AppStrategiesRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/ai-trader': typeof AppAiTraderRoute
+  '/backtesting': typeof AppBacktestingRoute
+  '/history': typeof AppHistoryRoute
+  '/market': typeof AppMarketRoute
+  '/paper-trading': typeof AppPaperTradingRoute
+  '/risk': typeof AppRiskRoute
+  '/settings': typeof AppSettingsRoute
+  '/strategies': typeof AppStrategiesRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/ai-trader': typeof AppAiTraderRoute
+  '/_app/backtesting': typeof AppBacktestingRoute
+  '/_app/history': typeof AppHistoryRoute
+  '/_app/market': typeof AppMarketRoute
+  '/_app/paper-trading': typeof AppPaperTradingRoute
+  '/_app/risk': typeof AppRiskRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/strategies': typeof AppStrategiesRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/ai-trader'
+    | '/backtesting'
+    | '/history'
+    | '/market'
+    | '/paper-trading'
+    | '/risk'
+    | '/settings'
+    | '/strategies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/login'
+    | '/ai-trader'
+    | '/backtesting'
+    | '/history'
+    | '/market'
+    | '/paper-trading'
+    | '/risk'
+    | '/settings'
+    | '/strategies'
+    | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/ai-trader'
+    | '/_app/backtesting'
+    | '/_app/history'
+    | '/_app/market'
+    | '/_app/paper-trading'
+    | '/_app/risk'
+    | '/_app/settings'
+    | '/_app/strategies'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/strategies': {
+      id: '/_app/strategies'
+      path: '/strategies'
+      fullPath: '/strategies'
+      preLoaderRoute: typeof AppStrategiesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/risk': {
+      id: '/_app/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof AppRiskRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/paper-trading': {
+      id: '/_app/paper-trading'
+      path: '/paper-trading'
+      fullPath: '/paper-trading'
+      preLoaderRoute: typeof AppPaperTradingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/market': {
+      id: '/_app/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AppMarketRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/history': {
+      id: '/_app/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/backtesting': {
+      id: '/_app/backtesting'
+      path: '/backtesting'
+      fullPath: '/backtesting'
+      preLoaderRoute: typeof AppBacktestingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ai-trader': {
+      id: '/_app/ai-trader'
+      path: '/ai-trader'
+      fullPath: '/ai-trader'
+      preLoaderRoute: typeof AppAiTraderRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppAiTraderRoute: typeof AppAiTraderRoute
+  AppBacktestingRoute: typeof AppBacktestingRoute
+  AppHistoryRoute: typeof AppHistoryRoute
+  AppMarketRoute: typeof AppMarketRoute
+  AppPaperTradingRoute: typeof AppPaperTradingRoute
+  AppRiskRoute: typeof AppRiskRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppStrategiesRoute: typeof AppStrategiesRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAiTraderRoute: AppAiTraderRoute,
+  AppBacktestingRoute: AppBacktestingRoute,
+  AppHistoryRoute: AppHistoryRoute,
+  AppMarketRoute: AppMarketRoute,
+  AppPaperTradingRoute: AppPaperTradingRoute,
+  AppRiskRoute: AppRiskRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppStrategiesRoute: AppStrategiesRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
