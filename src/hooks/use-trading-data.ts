@@ -21,7 +21,6 @@ import {
   mockAssets,
   mockEquityCurve,
   mockPaperOrders,
-  mockPriceCandles,
   mockSignals,
   mockStrategies,
   mockTrades,
