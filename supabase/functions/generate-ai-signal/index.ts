@@ -2,6 +2,7 @@ import { handleCors, jsonResponse } from "../_shared/cors.ts";
 import { createServiceClient, getUserIdFromRequest } from "../_shared/supabase.ts";
 import { generateSignalFromCandles } from "../_shared/analysis.ts";
 import { validateRisk } from "../_shared/risk.ts";
+import { refineWithOpenAI, isOpenAIEnabled } from "../_shared/openai.ts";
 import type { AISignalResponse, Candle } from "../_shared/types.ts";
 
 Deno.serve(async (req) => {
@@ -52,27 +53,40 @@ Deno.serve(async (req) => {
     }
 
     const generated = generateSignalFromCandles(candles);
+
+    // Camada IA: refina o sinal com base no histórico do usuário
+    const refined = await refineWithOpenAI({
+      supabase,
+      userId,
+      assetSymbol,
+      timeframe,
+      quant: generated,
+      lastPrices: candles.map((c) => c.close),
+    });
+
     const riskCheck = await validateRisk(
       supabase,
       userId,
-      generated.risk_percent,
-      generated.signal,
+      refined.risk_percent,
+      refined.signal,
     );
 
-    const blocked = !riskCheck.allowed && generated.signal !== "WAIT";
+    const blocked = !riskCheck.allowed && refined.signal !== "WAIT";
     const blockReason = blocked ? riskCheck.reason : null;
 
     const response: AISignalResponse = {
       asset: assetSymbol,
-      signal: generated.signal,
-      confidence: generated.confidence,
-      entry: generated.entry,
-      stop_loss: generated.stop_loss,
-      take_profit: generated.take_profit,
-      risk_percent: generated.risk_percent,
-      strategy: generated.strategy,
-      market_regime: generated.market_regime,
-      reason: generated.reason,
+      signal: refined.signal,
+      confidence: refined.confidence,
+      entry: refined.entry,
+      stop_loss: refined.stop_loss,
+      take_profit: refined.take_profit,
+      risk_percent: refined.risk_percent,
+      strategy: refined.strategy,
+      market_regime: refined.market_regime,
+      reason: refined.ai_reasoning
+        ? `${refined.reason} · IA: ${refined.ai_reasoning}`
+        : refined.reason,
       blocked,
       block_reason: blockReason ?? undefined,
     };
@@ -82,15 +96,15 @@ Deno.serve(async (req) => {
       .insert({
         user_id: userId,
         asset_id: asset.id,
-        signal: generated.signal,
-        confidence: generated.confidence,
-        entry: generated.entry,
-        stop_loss: generated.stop_loss,
-        take_profit: generated.take_profit,
-        risk_percent: generated.risk_percent,
-        strategy: generated.strategy,
-        market_regime: generated.market_regime,
-        reason: generated.reason,
+        signal: refined.signal,
+        confidence: refined.confidence,
+        entry: refined.entry,
+        stop_loss: refined.stop_loss,
+        take_profit: refined.take_profit,
+        risk_percent: refined.risk_percent,
+        strategy: refined.strategy,
+        market_regime: refined.market_regime,
+        reason: response.reason,
         blocked,
         block_reason: blockReason,
         raw_response: response,
@@ -108,10 +122,17 @@ Deno.serve(async (req) => {
     await supabase.from("ai_learning_logs").insert({
       user_id: userId,
       signal_id: saved.id,
-      decision: blocked ? "BLOCKED" : "GENERATED",
-      outcome: generated.signal,
-      feedback: blockReason ?? generated.reason,
-      metadata: { asset: assetSymbol, timeframe, response },
+      decision: blocked ? "BLOCKED" : refined.ai_used ? "AI_REFINED" : "GENERATED",
+      outcome: refined.signal,
+      feedback: blockReason ?? refined.ai_reasoning ?? refined.reason,
+      metadata: {
+        asset: assetSymbol,
+        timeframe,
+        ai_used: refined.ai_used ?? false,
+        quant_signal: generated.signal,
+        quant_confidence: generated.confidence,
+        response,
+      },
     });
 
     return jsonResponse(response);
