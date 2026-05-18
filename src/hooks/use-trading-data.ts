@@ -174,7 +174,11 @@ export function useGenerateSignal() {
   return useMutation({
     mutationFn: ({ asset, timeframe }: { asset: string; timeframe?: string }) =>
       generateAISignal(asset, timeframe ?? "1h"),
-    onSuccess: () => {
+    onSuccess: (signal) => {
+      // Insere o sinal no topo do cache (funciona em mock e live)
+      qc.setQueryData<unknown[]>(["signals", 5], (prev) => [signal, ...(prev ?? [])].slice(0, 5));
+      qc.setQueryData<unknown[]>(["signals", 10], (prev) => [signal, ...(prev ?? [])].slice(0, 10));
+      qc.setQueryData<unknown[]>(["signals", 3], (prev) => [signal, ...(prev ?? [])].slice(0, 3));
       qc.invalidateQueries({ queryKey: ["signals"] });
     },
   });
@@ -183,8 +187,29 @@ export function useGenerateSignal() {
 export function useExecutePaperOrder() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (signalId: string) => executePaperOrder(signalId),
+    mutationFn: async (signalId: string) => {
+      await executePaperOrder(signalId);
+      return signalId;
+    },
     onSuccess: () => {
+      // Em mock, adiciona uma ordem fictícia ao cache
+      qc.setQueryData<import("@/lib/types").PaperOrder[]>(["paper-orders"], (prev) => {
+        const entry = 42000 + Math.random() * 4000;
+        const newOrder: import("@/lib/types").PaperOrder = {
+          id: `mock-${Date.now()}`,
+          asset: "BTC/USDT",
+          side: "BUY",
+          qty: 0.05,
+          entry: +entry.toFixed(2),
+          current: +entry.toFixed(2),
+          stop: +(entry * 0.98).toFixed(2),
+          target: +(entry * 1.025).toFixed(2),
+          pnl: 0,
+          status: "OPEN",
+          openedAt: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+        };
+        return [newOrder, ...(prev ?? [])];
+      });
       qc.invalidateQueries({ queryKey: ["paper-orders"] });
       qc.invalidateQueries({ queryKey: ["signals"] });
     },
@@ -211,7 +236,11 @@ export function useSaveRiskSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (settings: RiskSettings) => updateRiskSettings(settings),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["risk-settings"] }),
+    onSuccess: (_, settings) => {
+      // Persiste no cache (mock e live)
+      qc.setQueryData(["risk-settings"], settings);
+      qc.invalidateQueries({ queryKey: ["risk-settings"] });
+    },
   });
 }
 
