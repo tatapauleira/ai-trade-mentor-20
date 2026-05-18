@@ -210,11 +210,32 @@ export async function fetchCandles(
   return mapCandlesToChart(data as Record<string, unknown>[]);
 }
 
-// --- Edge Functions ---
+// --- Edge Functions (com fallback mock quando Supabase não está configurado) ---
 export async function generateAISignal(
   asset: string,
   timeframe = "1h",
 ): Promise<AISignal> {
+  if (!isSupabaseConfigured()) {
+    // Mock determinístico para modo demo
+    const display = asset.includes("/") ? asset : `${asset.replace("USDT", "")}/USDT`;
+    const kinds: AISignal["kind"][] = ["BUY", "SELL", "WAIT"];
+    const kind = kinds[Math.floor(Math.random() * 3)];
+    const entry = 42000 + Math.random() * 4000;
+    return {
+      id: crypto.randomUUID(),
+      asset: display,
+      kind,
+      confidence: 50 + Math.floor(Math.random() * 45),
+      entry: +entry.toFixed(2),
+      stop: +(entry * 0.98).toFixed(2),
+      target: +(entry * 1.025).toFixed(2),
+      rationale: `Sinal simulado (${timeframe}) — IA detectou padrão de ${kind === "BUY" ? "rompimento" : kind === "SELL" ? "reversão" : "consolidação"}.`,
+      trend: kind === "BUY" ? "uptrend" : kind === "SELL" ? "downtrend" : "sideways",
+      volatility: "medium",
+      strategy: "Mock IA Híbrida",
+      createdAt: "agora",
+    };
+  }
   const res = await invokeFunction<AISignalApiResponse>("generate-ai-signal", {
     asset: toDbSymbol(asset),
     timeframe,
@@ -223,6 +244,7 @@ export async function generateAISignal(
 }
 
 export async function executePaperOrder(signalId: string): Promise<void> {
+  if (!isSupabaseConfigured()) return; // no-op em mock
   await invokeFunction("execute-paper-order", { signal_id: signalId });
 }
 
@@ -233,6 +255,34 @@ export async function runBacktest(params: {
   initialCapital: number;
   days: number;
 }): Promise<{ metrics: BacktestMetrics; equity_curve: ChartPoint[] }> {
+  if (!isSupabaseConfigured()) {
+    // Backtest mock determinístico
+    const totalTrades = 40 + Math.floor(Math.random() * 30);
+    const wins = Math.floor(totalTrades * (0.5 + Math.random() * 0.15));
+    const losses = totalTrades - wins;
+    const ret = 5 + Math.random() * 25;
+    const finalEquity = params.initialCapital * (1 + ret / 100);
+    const curve: ChartPoint[] = Array.from({ length: params.days }, (_, i) => ({
+      day: `D${i}`,
+      equity: Math.round(
+        params.initialCapital +
+          (finalEquity - params.initialCapital) * (i / params.days) +
+          Math.sin(i / 4) * 120,
+      ),
+    }));
+    return {
+      metrics: {
+        total_trades: totalTrades,
+        wins,
+        losses,
+        win_rate: +((wins / totalTrades) * 100).toFixed(1),
+        profit_factor: +(1 + Math.random() * 1.5).toFixed(2),
+        total_return_percent: +ret.toFixed(2),
+        final_equity: +finalEquity.toFixed(2),
+      },
+      equity_curve: curve,
+    };
+  }
   const end = new Date();
   const start = new Date(end.getTime() - params.days * 24 * 3600000);
 
@@ -257,6 +307,7 @@ export async function runBacktest(params: {
 }
 
 export async function updateMarketData(symbols?: string[]): Promise<void> {
+  if (!isSupabaseConfigured()) return; // no-op em mock
   await invokeFunction(
     "update-market-data",
     {
@@ -268,6 +319,7 @@ export async function updateMarketData(symbols?: string[]): Promise<void> {
 }
 
 export async function evaluateStrategyPerformance(strategyId?: string) {
+  if (!isSupabaseConfigured()) return { ok: true, mock: true };
   return invokeFunction("evaluate-strategy-performance", {
     strategy_id: strategyId,
   });
