@@ -21,7 +21,6 @@ import {
   mockAssets,
   mockEquityCurve,
   mockPaperOrders,
-  mockPriceCandles,
   mockSignals,
   mockStrategies,
   mockTrades,
@@ -121,13 +120,22 @@ export function useProfile() {
 }
 
 export function useCandles(asset: string, timeframe: string) {
-  const { enabled, isMock } = useLiveEnabled();
   return useQuery({
     queryKey: ["candles", asset, timeframe],
-    queryFn: () => fetchCandles(asset, timeframe),
-    enabled: enabled && Boolean(asset),
-    staleTime: stale,
-    initialData: isMock ? mockPriceCandles : undefined,
+    queryFn: async () => {
+      // Tenta Supabase quando configurado; senão (e em caso de falha) usa Binance pública.
+      try {
+        const live = await fetchCandles(asset, timeframe);
+        if (live && live.length > 0) return live;
+      } catch {
+        /* fallback abaixo */
+      }
+      const { fetchLiveCandles } = await import("@/lib/market-live");
+      return fetchLiveCandles(asset, timeframe);
+    },
+    enabled: Boolean(asset),
+    staleTime: 15_000,
+    refetchInterval: 30_000, // mantém o gráfico vivo
   });
 }
 
