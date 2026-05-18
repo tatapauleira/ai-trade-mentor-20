@@ -15,7 +15,7 @@ function PaperTradingPage() {
   const risk = useRiskSettings();
   const stats = useDashboardStats();
   const openPnl = orders.reduce((s, o) => s + o.pnl, 0);
-  const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "USD" });
+  const fmt = (n: number) => `$ ${n.toFixed(2)}`;
 
   return (
     <>
