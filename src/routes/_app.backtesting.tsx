@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { BacktestResults } from "@/components/BacktestResults";
-import { mockAssets, mockStrategies, mockTimeframes } from "@/lib/mock-data";
+import { useAssets, useRunBacktest, useStrategies } from "@/hooks/use-trading-data";
+import { TIMEFRAMES } from "@/lib/types";
+import type { BacktestMetrics, ChartPoint } from "@/lib/types";
 import { Play } from "lucide-react";
 
 export const Route = createFileRoute("/_app/backtesting")({
@@ -9,54 +12,103 @@ export const Route = createFileRoute("/_app/backtesting")({
 });
 
 function BacktestingPage() {
+  const { data: assets = [] } = useAssets();
+  const { data: strategies = [] } = useStrategies();
+  const run = useRunBacktest();
+
+  const [asset, setAsset] = useState("BTC/USDT");
+  const [timeframe, setTimeframe] = useState("1h");
+  const [strategyId, setStrategyId] = useState("");
+  const [days, setDays] = useState("60");
+  const [capital, setCapital] = useState("10000");
+  const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
+  const [curve, setCurve] = useState<ChartPoint[]>([]);
+
+  async function handleRun() {
+    const res = await run.mutateAsync({
+      asset,
+      timeframe,
+      strategyId: strategyId || undefined,
+      initialCapital: Number(capital),
+      days: Number(days),
+    });
+    setMetrics(res.metrics);
+    setCurve(res.equity_curve);
+  }
+
   return (
     <>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Backtesting</h1>
-        <p className="text-sm text-muted-foreground">Teste estratégias contra dados históricos antes de operar.</p>
+        <p className="text-sm text-muted-foreground">Edge Function run-backtest no Supabase.</p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Field label="Ativo">
-          <select className="input">{mockAssets.map(a => <option key={a}>{a}</option>)}</select>
+          <select className="input" value={asset} onChange={(e) => setAsset(e.target.value)}>
+            {assets.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
         </Field>
         <Field label="Timeframe">
-          <select className="input">{mockTimeframes.map(t => <option key={t}>{t}</option>)}</select>
+          <select className="input" value={timeframe} onChange={(e) => setTimeframe(e.target.value)}>
+            {TIMEFRAMES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
         </Field>
         <Field label="Estratégia">
-          <select className="input">{mockStrategies.map(s => <option key={s.id}>{s.name}</option>)}</select>
+          <select className="input" value={strategyId} onChange={(e) => setStrategyId(e.target.value)}>
+            <option value="">Todas (IA)</option>
+            {strategies.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </Field>
-        <Field label="Período (dias)"><input className="input font-mono" defaultValue="60" /></Field>
-        <Field label="Capital inicial"><input className="input font-mono" defaultValue="10000" /></Field>
-        <Field label="Risco / op (%)"><input className="input font-mono" defaultValue="1.0" /></Field>
-
-        <div className="md:col-span-3 lg:col-span-6 flex justify-end">
-          <button className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 inline-flex items-center gap-2">
-            <Play className="size-4" /> Rodar backtest
+        <Field label="Período (dias)">
+          <input className="input font-mono" value={days} onChange={(e) => setDays(e.target.value)} />
+        </Field>
+        <Field label="Capital inicial">
+          <input className="input font-mono" value={capital} onChange={(e) => setCapital(e.target.value)} />
+        </Field>
+        <div className="md:col-span-3 lg:col-span-6 flex justify-end items-end">
+          <button
+            type="button"
+            onClick={handleRun}
+            disabled={run.isPending}
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            <Play className="size-4" /> {run.isPending ? "Rodando…" : "Rodar backtest"}
           </button>
         </div>
       </div>
 
-      <BacktestResults />
+      {run.isError && (
+        <p className="text-sm text-bear">{(run.error as Error).message}</p>
+      )}
+
+      <BacktestResults metrics={metrics} equityCurve={curve} loading={run.isPending} />
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="text-sm font-semibold mb-3">Comparação entre estratégias</h3>
+        <h3 className="text-sm font-semibold mb-3">Estratégias cadastradas</h3>
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-sm">
             <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <tr>{["Estratégia","Trades","Win rate","PF","Drawdown","Retorno"].map(h => (
-                <th key={h} className="text-left font-medium py-2">{h}</th>
-              ))}</tr>
+              <tr>
+                {["Estratégia", "Trades", "Win rate", "PF", "Peso"].map((h) => (
+                  <th key={h} className="text-left font-medium py-2">{h}</th>
+                ))}
+              </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {mockStrategies.map((s,i) => (
+              {strategies.map((s) => (
                 <tr key={s.id}>
                   <td className="py-2">{s.name}</td>
                   <td className="py-2 font-mono">{s.trades}</td>
-                  <td className={`py-2 font-mono ${s.winRate >= 55 ? "text-bull" : ""}`}>{s.winRate}%</td>
+                  <td className="py-2 font-mono">{s.winRate}%</td>
                   <td className="py-2 font-mono">{s.profitFactor.toFixed(2)}</td>
-                  <td className="py-2 font-mono text-bear">-{(4 + i * 1.1).toFixed(1)}%</td>
-                  <td className="py-2 font-mono text-bull">+{(8 + i * 2.3).toFixed(1)}%</td>
+                  <td className="py-2 font-mono">{(s.weight * 100).toFixed(0)}%</td>
                 </tr>
               ))}
             </tbody>

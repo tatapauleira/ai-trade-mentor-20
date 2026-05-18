@@ -1,4 +1,4 @@
-import type { AISignal } from "@/lib/mock-data";
+import type { AISignal } from "@/lib/types";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 const kindMap = {

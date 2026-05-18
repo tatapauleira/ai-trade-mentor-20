@@ -1,20 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Shield } from "lucide-react";
-
-const fields = [
-  { id: "capital",    label: "Capital inicial simulado (USD)", default: "10000" },
-  { id: "riskPerOp",  label: "Risco máximo por operação (%)",  default: "1.0" },
-  { id: "dailyLoss",  label: "Perda máxima diária (%)",        default: "3.0" },
-  { id: "maxOps",     label: "Máx. operações por dia",          default: "8" },
-  { id: "lossStreak", label: "Pausar após N perdas seguidas",   default: "3" },
-  { id: "drawdown",   label: "Limite de drawdown (%)",          default: "10" },
-  { id: "maxPos",     label: "Tamanho máximo da posição (%)",   default: "20" },
-];
+import { useRiskSettings, useSaveRiskSettings } from "@/hooks/use-trading-data";
+import type { RiskSettings } from "@/lib/types";
 
 export function RiskPanel() {
-  const [values, setValues] = useState<Record<string, string>>(
-    Object.fromEntries(fields.map((f) => [f.id, f.default])),
-  );
+  const { data: remote } = useRiskSettings();
+  const save = useSaveRiskSettings();
+  const [values, setValues] = useState({
+    capital: "10000",
+    riskPerOp: "1.0",
+    dailyLoss: "3.0",
+    drawdown: "10",
+    maxPos: "5",
+  });
+
+  useEffect(() => {
+    if (!remote) return;
+    setValues({
+      capital: String(remote.paperBalance),
+      riskPerOp: String(remote.maxRiskPerTrade),
+      dailyLoss: String(remote.maxDailyLoss),
+      drawdown: String(remote.maxDrawdown),
+      maxPos: String(remote.maxOpenPositions),
+    });
+  }, [remote]);
+
+  function toSettings(): RiskSettings {
+    return {
+      paperBalance: Number(values.capital),
+      maxRiskPerTrade: Number(values.riskPerOp),
+      maxDailyLoss: Number(values.dailyLoss),
+      maxDrawdown: Number(values.drawdown),
+      maxOpenPositions: Number(values.maxPos),
+    };
+  }
+
+  async function handleSave() {
+    await save.mutateAsync(toSettings());
+  }
+
+  const fields = [
+    { id: "capital", label: "Capital inicial simulado (USD)" },
+    { id: "riskPerOp", label: "Risco máximo por operação (%)" },
+    { id: "dailyLoss", label: "Perda máxima diária (%)" },
+    { id: "drawdown", label: "Limite de drawdown (%)" },
+    { id: "maxPos", label: "Máx. posições abertas" },
+  ] as const;
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -37,11 +68,35 @@ export function RiskPanel() {
         ))}
       </div>
 
+      {save.isError && (
+        <p className="mt-3 text-xs text-bear">{(save.error as Error).message}</p>
+      )}
+      {save.isSuccess && (
+        <p className="mt-3 text-xs text-bull">Configuração salva no Supabase.</p>
+      )}
+
       <div className="mt-4 flex gap-2">
-        <button className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">
-          Salvar configuração
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={save.isPending}
+          className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        >
+          {save.isPending ? "Salvando…" : "Salvar configuração"}
         </button>
-        <button className="h-9 px-4 rounded-md border border-border text-sm hover:bg-surface-elevated">
+        <button
+          type="button"
+          onClick={() =>
+            setValues({
+              capital: "10000",
+              riskPerOp: "1.0",
+              dailyLoss: "3.0",
+              drawdown: "10",
+              maxPos: "5",
+            })
+          }
+          className="h-9 px-4 rounded-md border border-border text-sm hover:bg-surface-elevated"
+        >
           Restaurar padrões
         </button>
       </div>
