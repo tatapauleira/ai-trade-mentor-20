@@ -141,6 +141,23 @@ function OperationsPage() {
   const [rr, setRr] = useState<number>(1.8); // risk:reward
   const lastAssetRef = useRef(asset);
 
+  // === IA Plano (auto-executor) ===
+  const aiPlan = useAIPlanExecutor();
+  const [aiTotal, setAiTotal] = useState<number>(5);
+  const [aiWindow, setAiWindow] = useState<number>(15);
+  const [aiRisk, setAiRisk] = useState<number>(1);
+  const [aiMinConf, setAiMinConf] = useState<number>(60);
+  const [aiTick, setAiTick] = useState(0);
+  useEffect(() => {
+    if (!aiPlan.state.running) return;
+    const id = setInterval(() => setAiTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [aiPlan.state.running]);
+  const aiMsLeft = aiPlan.state.endsAt ? Math.max(0, aiPlan.state.endsAt - Date.now()) : 0;
+  const aiMinLeft = Math.floor(aiMsLeft / 60000);
+  const aiSecLeft = Math.floor((aiMsLeft % 60000) / 1000);
+  void aiTick; // forçar re-render
+
   useEffect(() => {
     if (lastAssetRef.current !== asset) {
       setQty(ASSET_DEFAULT_QTY[asset] ?? 1);
