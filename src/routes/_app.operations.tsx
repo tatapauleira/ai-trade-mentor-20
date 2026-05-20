@@ -568,6 +568,88 @@ function OperationsPage() {
         </div>
       </div>
 
+      {/* === IA AUTO-EXECUTOR === */}
+      <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-card p-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <div className="size-9 rounded-lg bg-primary/15 text-primary grid place-items-center">
+              <Brain className="size-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold">IA Auto-Executor</h3>
+              <p className="text-[11px] text-muted-foreground">
+                A IA observa o mercado e escolhe os melhores momentos para executar as operações dentro do prazo.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {aiPlan.state.running ? (
+              <>
+                <span className="text-xs font-mono px-2 py-1 rounded bg-bull/10 text-bull border border-bull/30">
+                  {aiPlan.state.executed}/{aiTotal} · ⏱ {aiMinLeft}m {aiSecLeft.toString().padStart(2, "0")}s
+                </span>
+                <button type="button" onClick={() => aiPlan.stop()}
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-semibold bg-bear text-white hover:opacity-90">
+                  <Square className="size-3.5" /> Parar
+                </button>
+              </>
+            ) : (
+              <button type="button"
+                onClick={() => aiPlan.start({
+                  asset,
+                  totalTrades: Math.max(1, aiTotal),
+                  windowMinutes: Math.max(1, aiWindow),
+                  riskPct: aiRisk,
+                  rr,
+                  minConfidence: aiMinConf,
+                  qty,
+                  balance: stats.balance,
+                })}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90">
+                <Play className="size-3.5" /> Iniciar IA em {asset}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Field label="Nº de operações">
+            <input type="number" min={1} max={50} value={aiTotal}
+              disabled={aiPlan.state.running}
+              onChange={(e) => setAiTotal(+e.target.value)}
+              className="w-full bg-surface border border-border rounded-md h-9 px-2 text-sm font-mono outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+          </Field>
+          <Field label="Janela máx (min)">
+            <input type="number" min={1} max={1440} value={aiWindow}
+              disabled={aiPlan.state.running}
+              onChange={(e) => setAiWindow(+e.target.value)}
+              className="w-full bg-surface border border-border rounded-md h-9 px-2 text-sm font-mono outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+          </Field>
+          <Field label="Risco % / trade">
+            <input type="number" step="0.1" min={0.1} max={10} value={aiRisk}
+              disabled={aiPlan.state.running}
+              onChange={(e) => setAiRisk(+e.target.value)}
+              className="w-full bg-surface border border-border rounded-md h-9 px-2 text-sm font-mono outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+          </Field>
+          <Field label="Confiança mín. (%)">
+            <input type="number" min={30} max={95} value={aiMinConf}
+              disabled={aiPlan.state.running}
+              onChange={(e) => setAiMinConf(+e.target.value)}
+              className="w-full bg-surface border border-border rounded-md h-9 px-2 text-sm font-mono outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+          </Field>
+        </div>
+
+        <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="text-muted-foreground">Status:</span>
+          <span className="font-mono">{aiPlan.state.lastTickMsg}</span>
+          {aiPlan.state.lastConfidence !== null && (
+            <span className="ml-auto text-muted-foreground">
+              Última confiança: <span className="font-mono text-foreground">{aiPlan.state.lastConfidence}%</span>
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Quick actions */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground mr-1">Ações rápidas:</span>
