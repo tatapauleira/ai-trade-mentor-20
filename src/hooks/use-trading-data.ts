@@ -158,18 +158,30 @@ export function useDashboardStats() {
   const orders = usePaperOrders();
   const trades = useTrades();
   const risk = useRiskSettings();
-  const { isMock } = useLiveEnabled();
 
   const openPnl = (orders.data ?? []).reduce((s, o) => s + o.pnl, 0);
-  const todayPnl = isMock ? 340.8 : openPnl;
-  const balance = isMock ? 12480.55 : (risk.data?.paperBalance ?? 10000) + openPnl;
+  const realizedPnl = (trades.data ?? []).reduce((s, t) => s + t.pnl, 0);
+  const base = risk.data?.paperBalance ?? 10000;
+  const balance = +(base + realizedPnl).toFixed(2);
+  const equity = +(balance + openPnl).toFixed(2);
+
+  // PnL "do dia": soma dos trades fechados hoje + flutuante das ordens abertas
+  const today = new Date().toDateString();
+  const todayRealized = (trades.data ?? [])
+    .filter((t) => (t.closedTs ? new Date(t.closedTs).toDateString() === today : true))
+    .reduce((s, t) => s + t.pnl, 0);
+  const dailyPnl = +(todayRealized + openPnl).toFixed(2);
+
   const wins = (trades.data ?? []).filter((t) => t.result === "WIN").length;
   const total = trades.data?.length ?? 0;
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : "—";
 
   return {
     balance,
-    dailyPnl: todayPnl,
+    equity,
+    realizedPnl,
+    openPnl,
+    dailyPnl,
     winRate,
     openOrders: orders.data?.length ?? 0,
     maxRisk: risk.data?.maxRiskPerTrade ?? 1,
