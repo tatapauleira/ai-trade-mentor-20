@@ -30,6 +30,8 @@ export interface PaperOrder {
   pnl: number;
   status: "OPEN" | "CLOSED";
   openedAt: string;
+  openedTs?: number;
+  strategy?: string;
 }
 
 export interface Trade {
@@ -43,6 +45,10 @@ export interface Trade {
   result: "WIN" | "LOSS";
   strategy: string;
   closedAt: string;
+  openedAt?: string;
+  openedTs?: number;
+  closedTs?: number;
+  pnlPct?: number;
 }
 
 export interface Strategy {
