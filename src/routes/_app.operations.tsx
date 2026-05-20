@@ -4,8 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Activity, ArrowDownRight, ArrowUpRight, Target, Trophy, TrendingDown, Clock,
-  Radio, Zap, X, RotateCw, Power, Wallet, ShieldAlert,
+  Radio, Zap, X, RotateCw, Power, Wallet, ShieldAlert, Brain, Play, Square,
 } from "lucide-react";
+import { useAIPlanExecutor } from "@/hooks/use-ai-plan-executor";
 import {
   Area, ComposedChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
   ReferenceDot, ReferenceLine,
