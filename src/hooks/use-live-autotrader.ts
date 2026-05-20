@@ -106,8 +106,9 @@ export function useLiveAutoTrader(enabled: boolean, opts: Options) {
           return;
         }
         // Abre ordem paper
+        const now = Date.now();
         const order: PaperOrder = {
-          id: `live-${Date.now()}`,
+          id: `live-${now}`,
           asset: sig.asset,
           side: sig.kind === "BUY" ? "BUY" : "SELL",
           qty: sig.qty,
@@ -117,7 +118,9 @@ export function useLiveAutoTrader(enabled: boolean, opts: Options) {
           target: sig.target,
           pnl: 0,
           status: "OPEN",
-          openedAt: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+          strategy: sig.strategy,
+          openedTs: now,
+          openedAt: new Date(now).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
         };
         qc.setQueryData<PaperOrder[]>(["paper-orders"], (prev) => [order, ...(prev ?? [])]);
         toast.success(`IA abriu ${order.side} ${order.asset} @ ${order.entry} (${sig.confidence}%)`);
