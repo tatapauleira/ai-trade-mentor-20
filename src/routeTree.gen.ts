@@ -16,6 +16,7 @@ import { Route as AppStrategiesRouteImport } from './routes/_app.strategies'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppRiskRouteImport } from './routes/_app.risk'
 import { Route as AppPaperTradingRouteImport } from './routes/_app.paper-trading'
+import { Route as AppOperationsRouteImport } from './routes/_app.operations'
 import { Route as AppMarketRouteImport } from './routes/_app.market'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppBacktestingRouteImport } from './routes/_app.backtesting'
@@ -55,6 +56,11 @@ const AppPaperTradingRoute = AppPaperTradingRouteImport.update({
   path: '/paper-trading',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOperationsRoute = AppOperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMarketRoute = AppMarketRouteImport.update({
   id: '/market',
   path: '/market',
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/backtesting': typeof AppBacktestingRoute
   '/history': typeof AppHistoryRoute
   '/market': typeof AppMarketRoute
+  '/operations': typeof AppOperationsRoute
   '/paper-trading': typeof AppPaperTradingRoute
   '/risk': typeof AppRiskRoute
   '/settings': typeof AppSettingsRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/backtesting': typeof AppBacktestingRoute
   '/history': typeof AppHistoryRoute
   '/market': typeof AppMarketRoute
+  '/operations': typeof AppOperationsRoute
   '/paper-trading': typeof AppPaperTradingRoute
   '/risk': typeof AppRiskRoute
   '/settings': typeof AppSettingsRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_app/backtesting': typeof AppBacktestingRoute
   '/_app/history': typeof AppHistoryRoute
   '/_app/market': typeof AppMarketRoute
+  '/_app/operations': typeof AppOperationsRoute
   '/_app/paper-trading': typeof AppPaperTradingRoute
   '/_app/risk': typeof AppRiskRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/backtesting'
     | '/history'
     | '/market'
+    | '/operations'
     | '/paper-trading'
     | '/risk'
     | '/settings'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/backtesting'
     | '/history'
     | '/market'
+    | '/operations'
     | '/paper-trading'
     | '/risk'
     | '/settings'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_app/backtesting'
     | '/_app/history'
     | '/_app/market'
+    | '/_app/operations'
     | '/_app/paper-trading'
     | '/_app/risk'
     | '/_app/settings'
@@ -210,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPaperTradingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/operations': {
+      id: '/_app/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof AppOperationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/market': {
       id: '/_app/market'
       path: '/market'
@@ -246,6 +265,7 @@ interface AppRouteChildren {
   AppBacktestingRoute: typeof AppBacktestingRoute
   AppHistoryRoute: typeof AppHistoryRoute
   AppMarketRoute: typeof AppMarketRoute
+  AppOperationsRoute: typeof AppOperationsRoute
   AppPaperTradingRoute: typeof AppPaperTradingRoute
   AppRiskRoute: typeof AppRiskRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -258,6 +278,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBacktestingRoute: AppBacktestingRoute,
   AppHistoryRoute: AppHistoryRoute,
   AppMarketRoute: AppMarketRoute,
+  AppOperationsRoute: AppOperationsRoute,
   AppPaperTradingRoute: AppPaperTradingRoute,
   AppRiskRoute: AppRiskRoute,
   AppSettingsRoute: AppSettingsRoute,
@@ -274,3 +295,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
