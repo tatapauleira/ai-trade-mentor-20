@@ -166,6 +166,8 @@ export function updateOrderWithPrice(order: PaperOrder, price: number): { order:
   if (hitStop || hitTarget) {
     const exit = hitTarget ? order.target : order.stop;
     const finalPnl = +((exit - order.entry) * order.qty * dir).toFixed(2);
+    const pnlPct = +(((exit - order.entry) / order.entry) * 100 * dir).toFixed(2);
+    const now = Date.now();
     const trade: Trade = {
       id: `tr-${order.id}`,
       asset: order.asset,
@@ -174,9 +176,13 @@ export function updateOrderWithPrice(order: PaperOrder, price: number): { order:
       exit,
       qty: order.qty,
       pnl: finalPnl,
+      pnlPct,
       result: finalPnl >= 0 ? "WIN" : "LOSS",
-      strategy: "AI Live",
-      closedAt: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+      strategy: order.strategy ?? "AI Live",
+      openedAt: order.openedAt,
+      openedTs: order.openedTs,
+      closedTs: now,
+      closedAt: new Date(now).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
     };
     return { order: { ...next, status: "CLOSED", pnl: finalPnl, current: exit }, closed: trade };
   }

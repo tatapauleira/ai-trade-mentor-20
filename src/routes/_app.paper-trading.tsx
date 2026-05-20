@@ -56,10 +56,10 @@ function PaperTradingPage() {
       <WarningBanner />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MetricCard label="Saldo simulado" value={fmt(risk.data?.paperBalance ?? stats.balance)} icon={DollarSign} tone="primary" />
+        <MetricCard label="Saldo (realizado)" value={fmt(stats.balance)} icon={DollarSign} tone="primary" />
+        <MetricCard label="Equity (com aberto)" value={fmt(stats.equity)} icon={DollarSign} tone={stats.equity >= stats.balance ? "bull" : "bear"} />
         <MetricCard label="P&L flutuante" value={fmt(openPnl)} icon={Target} tone={openPnl >= 0 ? "bull" : "bear"} />
         <MetricCard label="Ordens abertas" value={String(orders.length)} icon={Activity} />
-        <MetricCard label="Risco/op." value={`${risk.data?.maxRiskPerTrade ?? 1}%`} icon={Activity} />
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">

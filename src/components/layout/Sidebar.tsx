@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, LineChart, BrainCircuit, Layers, FlaskConical,
-  PlayCircle, History, Shield, Settings, Bot,
+  PlayCircle, History, Shield, Settings, Bot, ListChecks,
 } from "lucide-react";
 
 const nav = [
@@ -11,6 +11,7 @@ const nav = [
   { to: "/strategies", label: "Estratégias", icon: Layers },
   { to: "/backtesting", label: "Backtesting", icon: FlaskConical },
   { to: "/paper-trading", label: "Paper Trading", icon: PlayCircle },
+  { to: "/operations", label: "Operações", icon: ListChecks },
   { to: "/history", label: "Histórico", icon: History },
   { to: "/risk", label: "Gestão de risco", icon: Shield },
   { to: "/settings", label: "Configurações", icon: Settings },
